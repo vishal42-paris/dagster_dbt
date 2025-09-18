@@ -48,8 +48,19 @@ jobs:
           python -m pip install pip --upgrade
           cd project-repo
           pip install . --upgrade --upgrade-strategy eager
-          dagster-dbt project prepare-and-package --file dagster_and_dbt/project.py
+          dagster-dbt project prepare-and-package --file dagster_and_dbt/defs/project.py
         shell: bash
+
+
+      - name: Python Executable Deploy
+        if: steps.prerun.outputs.result == 'pex-deploy'
+        uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@v0.1
+        with:
+          dagster_cloud_file: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_CLOUD_FILE"
+          build_output_dir: "$GITHUB_WORKSPACE/build"
+          python_version: "${{ env.PYTHON_VERSION }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   dagster_cloud_docker_deploy:
     name: Docker Deploy
@@ -76,3 +87,4 @@ jobs:
           organization_id: ${{ secrets.ORGANIZATION_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
